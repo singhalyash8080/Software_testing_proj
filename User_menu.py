@@ -78,11 +78,24 @@ class User:
          scrollbary.grid(row=1, column=1, sticky="ns", pady=30)
          self.getproducts()
 
-    def getproducts(self):
+    def getproducts(self,user=''):
+        if(user==''):
+
          self.cur.execute("select * from products")
          productlist = self.cur.fetchall()
          for i in productlist:
+              
               self.tree.insert('', 'end', values=(i))
+        else:
+            
+         self.cur.execute("select * from products")
+         productlist = self.cur.fetchall()
+         if(len(productlist)>1):
+             return 1
+         for i in productlist:
+              print(i)
+            #   self.tree.insert('', 'end', values=(i))
+
     def make_invoice(self):
         self.tableframe.place_forget()
         self.entryframe.place(self.entryframeinfo)
@@ -306,14 +319,30 @@ class User:
                f.write("\n")
            f.close()
        '''
-    def clicktranstable(self,event):
-        cur = self.tree.selection()
-        cur = self.tree.item(cur)
-        li = cur['values']
-        if (len(li) == 7):
-            self.cartitemid.set((li[1]))
-            self.cartitem.set((li[2]))
-            self.cur.execute("select product_price,stocks from products where product_id=?",(li[1],))
+    def clicktranstable(self,user=''):
+        if(user==''):
+
+            cur = self.tree.selection()
+            cur = self.tree.item(cur)
+            li = cur['values']
+            if (len(li) == 7):
+                self.cartitemid.set((li[1]))
+                self.cartitem.set((li[2]))
+                self.cur.execute("select product_price,stocks from products where product_id=?",(li[1],))
+                li = self.cur.fetchall()
+                self.cartitemprice.set(li[0][0])
+                self.cartitemstock.set(li[0][1]-self.id_qty[self.cartitemid.get()])
+        else:
+            li=[]
+            self.cur.execute("select product_price,stocks from products where product_id=?",(user,))
             li = self.cur.fetchall()
-            self.cartitemprice.set(li[0][0])
-            self.cartitemstock.set(li[0][1]-self.id_qty[self.cartitemid.get()])
+            return (li[0][0])
+
+
+    def updateStocks(self,stocks='',product_id=''):
+          li=[]
+          self.cur.execute("update products set stocks=? where product_id=?",(stocks,product_id))
+          self.cur.execute("select product_price,stocks from products where product_id=?",(product_id,))
+          li = self.cur.fetchall()
+          self.base.commit()
+          return (li[0][1])

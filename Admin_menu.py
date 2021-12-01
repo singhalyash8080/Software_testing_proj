@@ -376,6 +376,16 @@ class Admin:
         messagebox.showinfo('Success','Item Added Successfully')
         self.base.commit()
 
+    def AddItem(self,item_code='',item_name='',item_desc='',item_cat='',item_price='',item_stocks=''):
+        self.cur.execute("insert into products values(?,?,?,?,?,?)",(item_code,item_name,item_desc,
+        item_cat,item_price,item_stocks))
+        self.cur.execute("select product_price,stocks from products where product_id=?",(item_code,))
+        li = self.cur.fetchall()
+        print(li[0][1])
+        self.base.commit()
+        return 1
+
+
     #BUILD USER TABLE
     def buildusertable(self):
          self.searchframe.place_forget()
