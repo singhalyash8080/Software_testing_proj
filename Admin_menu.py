@@ -252,20 +252,26 @@ class Admin:
             cur=self.getproducts(li[0])
             self.tree.selection_set(cur)
 
-    def delproduct(self):
-        cur = self.tree.focus()
-        cur = self.tree.item(cur)
-        li = cur['values']
-        if messagebox.askyesno('Alert!','Do you want to remove product from inventory?') == True and len(li) ==6:
-            self.cur.execute("delete from products where product_id = ?;", (li[0],))
+    def delproduct(self, prod_id = ''):
+
+        if(prod_id == ''):
+            cur = self.tree.focus()
+            cur = self.tree.item(cur)
+            li = cur['values']
+            if messagebox.askyesno('Alert!','Do you want to remove product from inventory?') == True and len(li) ==6:
+                self.cur.execute("delete from products where product_id = ?;", (li[0],))
+                self.base.commit()
+                self.tree.delete(*self.tree.get_children())
+                self.getproducts()
+                self.itemeditv.set('')
+                self.itemeditdescv.set('')
+                self.itemeditcatv.set('')
+                self.itemeditstockv.set('')
+                self.itemeditpricev.set('')
+        else:
+            self.cur.execute("delete from products where product_id = ?;", (prod_id,))
             self.base.commit()
-            self.tree.delete(*self.tree.get_children())
-            self.getproducts()
-            self.itemeditv.set('')
-            self.itemeditdescv.set('')
-            self.itemeditcatv.set('')
-            self.itemeditstockv.set('')
-            self.itemeditpricev.set('')
+            return 1
 
     def searchprod(self):
         if (self.searchvar.get() == ''):
@@ -381,7 +387,7 @@ class Admin:
         item_cat,item_price,item_stocks))
         self.cur.execute("select product_price,stocks from products where product_id=?",(item_code,))
         li = self.cur.fetchall()
-        print(li[0][1])
+        # print(li[0][1])
         self.base.commit()
         return 1
 
@@ -451,48 +457,67 @@ class Admin:
 
          return ans
 
-    def changeusertable(self):
-        cur = self.tree.selection()
-        cur = self.tree.item(cur)
-        li = cur['values']
-        self.usernamedit.set((self.usernamedit.get()).upper())
-        self.passwordedit.set((self.passwordedit.get()).upper())
-        self.accedit.set((self.accedit.get()).upper())
-        if (len(li) == 3):
-            if self.usernamedit.get() == '' or self.accedit.get() == '':
+    def changeusertable(self, usern = '', pasw = '', acc = ''):
+
+        if(usern==''):
+            cur = self.tree.selection()
+            cur = self.tree.item(cur)
+            li = cur['values']
+
+            self.usernamedit.set((self.usernamedit.get()).upper())
+            self.passwordedit.set((self.passwordedit.get()).upper())
+            self.accedit.set((self.accedit.get()).upper())
+
+            if (self.usernamedit.get() == '' or self.accedit.get() == ''):
                 messagebox.showerror("Error", "Please Fill All Fields")
                 return
             if(self.accedit.get()!='ADMIN' and self.accedit.get()!='USER' ):
                 messagebox.showerror("Error", "Unknown account type!")
                 return
+            
+            # print(self.passwordedit.get(), self.usernamedit.get(), self.accedit.get())
+
             self.cur.execute(
             "update users set password = ?,account_type = ? where username = ?;", (
             self.passwordedit.get(), self.accedit.get(),self.usernamedit.get()))
             self.base.commit()
+
             self.tree.delete(*self.tree.get_children())
+        
             cur = self.getusers(li[0])
             self.tree.selection_set(cur)
-
-    def deluser(self):
-        cur = self.tree.focus()
-        cur = self.tree.item(cur)
-        li = cur['values']
-        fa=0
-        if(self.username.get()==li[0]):
-            if(messagebox.askyesno("Alert!","Remove Current User?")==True):
-                fa=1
-            else:
-                return
-        if messagebox.askyesno('Alert!', 'Do you want to remove this profile?') == True and len(li) == 3:
-            self.cur.execute("delete from users where username = ?;", (li[0],))
+        else:
+            # print(usern,pasw,acc)
+            self.cur.execute("update users set password = ?,account_type = ? where username = ?;",(pasw, acc, usern))
             self.base.commit()
-            self.tree.delete(*self.tree.get_children())
-            self.getusers()
-            self.usernamedit.set('')
-            self.passwordedit.set('')
-            self.accedit.set('')
-        if(fa==1):
-            self.change_user()
+            return 1
+
+    def deluser(self, usern = ''):
+
+        if(usern == ''):
+            cur = self.tree.focus()
+            cur = self.tree.item(cur)
+            li = cur['values']
+            fa=0
+            if(self.username.get()==li[0]):
+                if(messagebox.askyesno("Alert!","Remove Current User?")==True):
+                    fa=1
+                else:
+                    return
+            if messagebox.askyesno('Alert!', 'Do you want to remove this profile?') == True and len(li) == 3:
+                self.cur.execute("delete from users where username = ?;", (li[0],))
+                self.base.commit()
+                self.tree.delete(*self.tree.get_children())
+                self.getusers()
+                self.usernamedit.set('')
+                self.passwordedit.set('')
+                self.accedit.set('')
+            if(fa==1):
+                self.change_user()
+        else:
+            self.cur.execute("delete from users where username = ?;", (usern,))
+            self.base.commit()
+            return 1
 
     def adduser(self):
         self.reguser()
