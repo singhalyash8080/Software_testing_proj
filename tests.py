@@ -56,9 +56,42 @@ class TestAppMethods(unittest.TestCase):
         # checking if the already existing user is detected
         self.assertEqual(Login.insert(self, 0, existingUsername, existingPassword), 'Username already exist')
 
-    
 
-    
+    #checking if get products functionality working at cashier side 
+    def test_product_list(self):
+        
+        self.base = sqlite3.connect("login.db")
+        self.cur = self.base.cursor()
+
+        
+        self.assertEqual(User.getproducts(self,user='a'),1)
+
+
+    # Checking if on providing  product id we get product price
+    def test_product_price(self):
+        
+        self.base = sqlite3.connect("login.db")
+        self.cur = self.base.cursor()
+
+        
+        
+        self.assertEqual(User.clicktranstable(self,user='100730'),60)
+
+
+    def testupdate_stocks(self):
+        self.base = sqlite3.connect("login.db")
+        self.cur = self.base.cursor()
+        User.updateStocks(self,stocks='101',product_id='100730')
+
+        self.assertEqual(1,1)
+
+
+    # def testAddItem(self):
+    #     self.base = sqlite3.connect("login.db")
+    #     self.cur = self.base.cursor()
+    #     Admin.AddItem(self,item_code='111111',item_name='Brush',item_desc='Colgate Toothbrush',item_cat='OTHERS',item_price='20',item_stocks='500')
+
+    #     self.assertEqual(1,1)
 
 if __name__ == '__main__':
     unittest.main()
